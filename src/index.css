@@ -111,3 +111,81 @@
 .dark .scrollbar-thin::-webkit-scrollbar-thumb:hover {
   background-color: rgb(107 114 128);
 }
+
+/* Result Reaction Animations */
+@keyframes popOutFade {
+  0% {
+    transform: scale(0) rotate(-10deg);
+    opacity: 0;
+  }
+  10% {
+    transform: scale(1.2) rotate(5deg);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1) rotate(0deg) translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.8) rotate(0deg) translateY(-100px);
+    opacity: 0;
+  }
+}
+
+@keyframes confettiLeft {
+  0% {
+    transform: translateX(0) translateY(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateX(400px) translateY(-100px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes confettiRight {
+  0% {
+    transform: translateX(0) translateY(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateX(-400px) translateY(-100px) rotate(-360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes confettiFall {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+.animate-popOutFade {
+  animation: popOutFade 3s ease-out forwards;
+}
+
+.animate-confettiLeft {
+  animation: confettiLeft 2s ease-out forwards;
+}
+
+.animate-confettiRight {
+  animation: confettiRight 2s ease-out forwards;
+}
+
+.animate-confettiFall {
+  animation: confettiFall 3s ease-in forwards;
+}

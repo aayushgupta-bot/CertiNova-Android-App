@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { QuizResult, Question } from '../types/quiz';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { Trophy, Clock, Target, RotateCcw, BookOpen, ChevronDown, ChevronUp, X, CheckCircle } from 'lucide-react';
+import { ResultReaction } from './ResultReaction';
 
 interface QuizResultsProps {
   result: QuizResult;
@@ -174,6 +175,9 @@ export function QuizResults({ result, onRestart }: QuizResultsProps) {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
+      {/* Result Reaction with Party Poppers */}
+      <ResultReaction percentage={(result.correctAnswers / result.totalQuestions) * 100} />
+
       <div className="text-center mb-8">
         <div className="flex justify-center mb-4">
           <div className={`w-20 h-20 rounded-full flex items-center justify-center transition-colors duration-300 ${
