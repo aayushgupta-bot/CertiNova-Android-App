@@ -247,6 +247,8 @@ export function useQuiz(config: QuizConfig) {
       timeSpent: Date.now() - startTime,
       categoryBreakdown,
       difficultyBreakdown,
+      questions,
+      answers,
     };
   };
 

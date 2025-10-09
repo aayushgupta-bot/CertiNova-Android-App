@@ -1,7 +1,7 @@
-import React from 'react';
-import { QuizResult } from '../types/quiz';
+import React, { useState } from 'react';
+import { QuizResult, Question } from '../types/quiz';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-import { Trophy, Clock, Target, RotateCcw, BookOpen } from 'lucide-react';
+import { Trophy, Clock, Target, RotateCcw, BookOpen, ChevronDown, ChevronUp, X, CheckCircle } from 'lucide-react';
 
 interface QuizResultsProps {
   result: QuizResult;
@@ -9,6 +9,8 @@ interface QuizResultsProps {
 }
 
 export function QuizResults({ result, onRestart }: QuizResultsProps) {
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+
   const formatTime = (ms: number) => {
     const minutes = Math.floor(ms / 60000);
     const seconds = Math.floor((ms % 60000) / 1000);
@@ -67,6 +69,108 @@ export function QuizResults({ result, onRestart }: QuizResultsProps) {
   }));
 
   const feedback = getFeedback(result.score, result.categoryBreakdown);
+
+  const getWrongQuestionsByCategory = (category: string): Question[] => {
+    if (!result.questions || !result.answers) return [];
+    
+    return result.questions.filter(question => {
+      if (question.category !== category) return false;
+      const userAnswer = result.answers![question.id];
+      return !checkAnswer(question, userAnswer);
+    });
+  };
+
+  const checkAnswer = (question: Question, userAnswer: any): boolean => {
+    if (userAnswer === null || userAnswer === undefined || userAnswer === '') {
+      return false;
+    }
+    
+    if (Array.isArray(userAnswer) && userAnswer.length === 0) {
+      return false;
+    }
+    
+    switch (question.type) {
+      case 'mcq':
+        const userStr = String(userAnswer).trim();
+        const correctStr = String(question.correct_answer).trim();
+        
+        if (correctStr.length === 1 && /^[A-D]$/i.test(correctStr)) {
+          const userLetter = userStr.charAt(0).toUpperCase();
+          const correctLetter = correctStr.toUpperCase();
+          return userLetter === correctLetter;
+        }
+        return userStr === correctStr;
+        
+      case 'drag-drop':
+        const compactUserAnswer = Array.isArray(userAnswer)
+          ? userAnswer.filter(item => item !== undefined && item !== null && item !== '').map(item => String(item).trim())
+          : [];
+        const correctAnswer = Array.isArray(question.correct_answer)
+          ? question.correct_answer.map(item => String(item).trim())
+          : [];
+        return compactUserAnswer.length === correctAnswer.length && 
+               compactUserAnswer.every((item, index) => item === correctAnswer[index]);
+        
+      default:
+        return JSON.stringify(userAnswer) === JSON.stringify(question.correct_answer);
+    }
+  };
+
+  const toggleCategory = (category: string) => {
+    setExpandedCategory(expandedCategory === category ? null : category);
+  };
+
+  const formatAnswer = (answer: any): string => {
+    if (Array.isArray(answer)) {
+      return answer.filter(item => item !== undefined && item !== null && item !== '').join(' → ');
+    }
+    return String(answer || 'No answer');
+  };
+
+  const getFullAnswerText = (question: Question, answer: any): string => {
+    if (!answer || answer === 'No answer') return 'No answer';
+    
+    // For MCQ questions, try to get the full option text
+    if (question.type === 'mcq' && question.options) {
+      const answerStr = String(answer).trim();
+      
+      // If answer is just a letter (A, B, C, D), find the full option text
+      if (answerStr.length === 1 && /^[A-D]$/i.test(answerStr)) {
+        const letter = answerStr.toUpperCase();
+        const optionIndex = letter.charCodeAt(0) - 'A'.charCodeAt(0);
+        if (optionIndex >= 0 && optionIndex < question.options.length) {
+          return question.options[optionIndex];
+        }
+      }
+      
+      // If answer already contains the full text, return it
+      return answerStr;
+    }
+    
+    // For other question types, use the regular format
+    return formatAnswer(answer);
+  };
+
+  const getCorrectAnswerText = (question: Question): string => {
+    if (question.type === 'mcq' && question.options) {
+      const correctStr = String(question.correct_answer).trim();
+      
+      // If correct answer is just a letter, find the full option text
+      if (correctStr.length === 1 && /^[A-D]$/i.test(correctStr)) {
+        const letter = correctStr.toUpperCase();
+        const optionIndex = letter.charCodeAt(0) - 'A'.charCodeAt(0);
+        if (optionIndex >= 0 && optionIndex < question.options.length) {
+          return question.options[optionIndex];
+        }
+      }
+      
+      // If correct answer already contains full text, return it
+      return correctStr;
+    }
+    
+    // For other question types
+    return formatAnswer(question.correct_answer);
+  };
 
   return (
     <div className="max-w-6xl mx-auto p-6">
@@ -145,41 +249,125 @@ export function QuizResults({ result, onRestart }: QuizResultsProps) {
       </div>
 
       {/* Category Performance */}
-      <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-        <h2 className="text-xl font-semibold mb-6 flex items-center space-x-2">
-          <BookOpen className="w-6 h-6 text-blue-600" />
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg dark:shadow-2xl p-6 mb-8 transition-all duration-300 border border-gray-200 dark:border-gray-700">
+        <h2 className="text-xl font-semibold mb-6 flex items-center space-x-2 text-gray-800 dark:text-white transition-colors duration-300">
+          <BookOpen className="w-6 h-6 text-blue-600 dark:text-blue-400" />
           <span>Category Performance</span>
         </h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {categoryData.map((category) => (
-            <div key={category.category} className="p-4 border border-gray-200 rounded-lg">
-              <div className="flex justify-between items-center mb-2">
-                <span className="font-medium text-gray-800">{category.category}</span>
-                <span className={`font-bold ${getScoreColor(category.percentage)}`}>
-                  {category.percentage}%
-                </span>
+          {categoryData.map((category) => {
+            const wrongQuestions = getWrongQuestionsByCategory(category.category);
+            const isExpanded = expandedCategory === category.category;
+            const hasWrongQuestions = wrongQuestions.length > 0;
+            
+            return (
+              <div key={category.category} className="border border-gray-200 dark:border-gray-700 rounded-lg transition-all duration-300">
+                <div 
+                  className={`p-4 ${hasWrongQuestions ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700' : ''} transition-colors duration-200`}
+                  onClick={() => hasWrongQuestions && toggleCategory(category.category)}
+                >
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="font-medium text-gray-800 dark:text-white transition-colors duration-300">{category.category}</span>
+                    <div className="flex items-center space-x-2">
+                      <span className={`font-bold ${getScoreColor(category.percentage)} transition-colors duration-300`}>
+                        {category.percentage}%
+                      </span>
+                      {hasWrongQuestions && (
+                        isExpanded ? 
+                          <ChevronUp className="w-4 h-4 text-gray-600 dark:text-gray-400" /> : 
+                          <ChevronDown className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-2 transition-colors duration-300">
+                    {category.correct}/{category.total} correct
+                    {hasWrongQuestions && (
+                      <span className="text-red-600 dark:text-red-400 ml-2">
+                        ({wrongQuestions.length} wrong)
+                      </span>
+                    )}
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2 transition-colors duration-300">
+                    <div
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        category.percentage >= 80 ? 'bg-green-500 dark:bg-green-400' :
+                        category.percentage >= 60 ? 'bg-yellow-500 dark:bg-yellow-400' : 'bg-red-500 dark:bg-red-400'
+                      }`}
+                      style={{ width: `${category.percentage}%` }}
+                    />
+                  </div>
+                </div>
+                
+                {/* Expanded Wrong Questions */}
+                {isExpanded && hasWrongQuestions && (
+                  <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+                    <div className="flex justify-between items-center mb-3">
+                      <h3 className="font-semibold text-red-600 dark:text-red-400 transition-colors duration-300">
+                        Questions to Review:
+                      </h3>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setExpandedCategory(null);
+                        }}
+                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors duration-200"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                    
+                    <div className="space-y-4 max-h-96 overflow-y-auto">
+                      {wrongQuestions.map((question, index) => (
+                        <div key={question.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 transition-colors duration-300">
+                          <div className="flex items-start space-x-2 mb-3">
+                            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center justify-center text-sm font-semibold">
+                              {index + 1}
+                            </span>
+                            <p className="text-sm font-medium text-gray-800 dark:text-white flex-1 transition-colors duration-300">
+                              {question.question}
+                            </p>
+                          </div>
+                          
+                          <div className="ml-8 space-y-2">
+                            <div className="text-sm">
+                              <span className="font-semibold text-red-600 dark:text-red-400">Your Answer: </span>
+                              <span className="text-gray-700 dark:text-gray-300 transition-colors duration-300">
+                                {getFullAnswerText(question, result.answers![question.id])}
+                              </span>
+                            </div>
+                            
+                            <div className="text-sm flex items-start space-x-2">
+                              <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+                              <div>
+                                <span className="font-semibold text-green-600 dark:text-green-400">Correct Answer: </span>
+                                <span className="text-gray-700 dark:text-gray-300 transition-colors duration-300">
+                                  {getCorrectAnswerText(question)}
+                                </span>
+                              </div>
+                            </div>
+                            
+                            {question.explanation && (
+                              <div className="text-xs text-gray-600 dark:text-gray-400 mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded transition-colors duration-300">
+                                <span className="font-semibold">Explanation: </span>
+                                {question.explanation}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-              <div className="text-sm text-gray-600 mb-2">
-                {category.correct}/{category.total} correct
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className={`h-2 rounded-full ${
-                    category.percentage >= 80 ? 'bg-green-500' :
-                    category.percentage >= 60 ? 'bg-yellow-500' : 'bg-red-500'
-                  }`}
-                  style={{ width: `${category.percentage}%` }}
-                />
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
       {/* Feedback */}
-      <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-        <h2 className="text-xl font-semibold mb-6">Personalized Feedback</h2>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg dark:shadow-2xl p-6 mb-8 transition-all duration-300 border border-gray-200 dark:border-gray-700">
+        <h2 className="text-xl font-semibold mb-6 text-gray-800 dark:text-white transition-colors duration-300">Personalized Feedback</h2>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {feedback.strengths.length > 0 && (

@@ -27,6 +27,8 @@ export interface QuizResult {
   timeSpent: number;
   categoryBreakdown: Record<string, { correct: number; total: number }>;
   difficultyBreakdown: Record<string, { correct: number; total: number }>;
+  questions?: Question[];
+  answers?: Record<string, any>;
 }
 
 export interface QuizState {
