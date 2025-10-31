@@ -15,11 +15,11 @@ export function QuizSetup({ onStartQuiz }: QuizSetupProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [lockMessage, setLockMessage] = useState<string>('');
 
-  // Lock configuration - define what's locked
+  // Lock configuration - define what's locked (ALL UNLOCKED)
   const locks = {
-    examinationMode: true,
-    mediumDifficulty: true,
-    hardDifficulty: true
+    examinationMode: false,
+    mediumDifficulty: false,
+    hardDifficulty: false
   };
 
   const showLockMessage = (message: string) => {
