@@ -1,6 +1,7 @@
 import { Question } from '../types/quiz';
 import { predefinedQuestions } from '../data/questions';
 import { dragDropQuestions } from '../data/dragDropQuestions';
+import { dp700Questions } from '../data/dp700Questions';
 
 // Debug imports immediately
 console.log('[Storage] Import verification:', {
@@ -8,10 +9,13 @@ console.log('[Storage] Import verification:', {
   predefinedCount: predefinedQuestions ? predefinedQuestions.length : 0,
   dragDropQuestionsLoaded: Array.isArray(dragDropQuestions),
   dragDropCount: dragDropQuestions ? dragDropQuestions.length : 0,
+  dp700QuestionsLoaded: Array.isArray(dp700Questions),
+  dp700Count: dp700Questions ? dp700Questions.length : 0,
   predefinedAI900: predefinedQuestions ? predefinedQuestions.filter(q => q && q.exam_type === 'AI-900').length : 0,
   predefinedAZ900: predefinedQuestions ? predefinedQuestions.filter(q => q && q.exam_type === 'AZ-900').length : 0,
   dragDropAI900: dragDropQuestions ? dragDropQuestions.filter(q => q && q.exam_type === 'AI-900').length : 0,
   dragDropAZ900: dragDropQuestions ? dragDropQuestions.filter(q => q && q.exam_type === 'AZ-900').length : 0,
+  dp700: dp700Questions ? dp700Questions.filter(q => q && q.exam_type === 'DP-700').length : 0,
   predefinedInvalid: predefinedQuestions ? predefinedQuestions.filter(q => !q || !q.exam_type).length : 0,
   dragDropInvalid: dragDropQuestions ? dragDropQuestions.filter(q => !q || !q.exam_type).length : 0
 });
@@ -30,9 +34,9 @@ export class QuestionStorage {
       if (!stored) {
         // Combine all question types on first load
         console.log('Initializing with all question types...');
-        const allQuestions = [...predefinedQuestions, ...dragDropQuestions];
+        const allQuestions = [...predefinedQuestions, ...dragDropQuestions, ...dp700Questions];
         this.saveQuestions(allQuestions);
-        console.log(`Initialized ${allQuestions.length} total questions (${predefinedQuestions.length} MCQ + ${dragDropQuestions.length} drag-drop)`);
+        console.log(`Initialized ${allQuestions.length} total questions (${predefinedQuestions.length} MCQ + ${dragDropQuestions.length} drag-drop + ${dp700Questions.length} DP-700)`);
       }
     } catch (error) {
       console.warn('localStorage not available, using static data:', error);
@@ -42,10 +46,11 @@ export class QuestionStorage {
   static async getQuestions(): Promise<Question[]> {
     // Always return static data in production to avoid localStorage issues
     if (typeof window === 'undefined') {
-      const combinedQuestions = [...predefinedQuestions, ...dragDropQuestions];
+      const combinedQuestions = [...predefinedQuestions, ...dragDropQuestions, ...dp700Questions];
       console.log('[Storage] Server-side getQuestions:', {
         predefined: predefinedQuestions.length,
         dragDrop: dragDropQuestions.length,
+        dp700: dp700Questions.length,
         total: combinedQuestions.length
       });
       return combinedQuestions;
@@ -59,13 +64,14 @@ export class QuestionStorage {
       if (stored) {
         const parsedQuestions = JSON.parse(stored);
         // Ensure we have the latest questions by merging with static data
-        const allQuestions = [...predefinedQuestions, ...dragDropQuestions];
+        const allQuestions = [...predefinedQuestions, ...dragDropQuestions, ...dp700Questions];
         
         console.log('[Storage] getQuestions from localStorage:', {
           stored: parsedQuestions.length,
           static: allQuestions.length,
           predefined: predefinedQuestions.length,
           dragDrop: dragDropQuestions.length,
+          dp700: dp700Questions.length,
           usingStatic: allQuestions.length > parsedQuestions.length
         });
         
@@ -78,14 +84,17 @@ export class QuestionStorage {
     // Fallback to static data
     const safePredefinedQuestions = predefinedQuestions || [];
     const safeDragDropQuestions = dragDropQuestions || [];
-    const fallbackQuestions = [...safePredefinedQuestions, ...safeDragDropQuestions];
+    const safeDp700Questions = dp700Questions || [];
+    const fallbackQuestions = [...safePredefinedQuestions, ...safeDragDropQuestions, ...safeDp700Questions];
     
     console.log('[Storage] getQuestions fallback:', {
       predefined: safePredefinedQuestions.length,
       dragDrop: safeDragDropQuestions.length,
+      dp700: safeDp700Questions.length,
       total: fallbackQuestions.length,
       ai900Count: fallbackQuestions.filter(q => q.exam_type === 'AI-900').length,
-      az900Count: fallbackQuestions.filter(q => q.exam_type === 'AZ-900').length
+      az900Count: fallbackQuestions.filter(q => q.exam_type === 'AZ-900').length,
+      dp700Count: fallbackQuestions.filter(q => q.exam_type === 'DP-700').length
     });
     
     // If we still have no questions, there's a serious import issue
@@ -111,7 +120,7 @@ export class QuestionStorage {
   static getQuestionsSync(): Question[] {
     // Always return combined static data for reliability
     if (typeof window === 'undefined') {
-      return [...predefinedQuestions, ...dragDropQuestions];
+      return [...predefinedQuestions, ...dragDropQuestions, ...dp700Questions];
     }
     
     try {
@@ -119,7 +128,7 @@ export class QuestionStorage {
       if (stored) {
         const parsedQuestions = JSON.parse(stored);
         // Ensure we have the latest questions by merging with static data
-        const allQuestions = [...predefinedQuestions, ...dragDropQuestions];
+        const allQuestions = [...predefinedQuestions, ...dragDropQuestions, ...dp700Questions];
         return allQuestions.length > parsedQuestions.length ? allQuestions : parsedQuestions;
       }
     } catch (error) {
@@ -127,7 +136,7 @@ export class QuestionStorage {
     }
     
     // Fallback to static data
-    return [...predefinedQuestions, ...dragDropQuestions];
+    return [...predefinedQuestions, ...dragDropQuestions, ...dp700Questions];
   }
 
   static saveQuestions(questions: Question[]): void {
@@ -140,7 +149,7 @@ export class QuestionStorage {
     }
   }
 
-  static async getQuestionsByExamType(examType: 'AZ-900' | 'AI-900'): Promise<Question[]> {
+  static async getQuestionsByExamType(examType: 'AZ-900' | 'AI-900' | 'DP-700'): Promise<Question[]> {
     const questions = await this.getQuestions();
     
     console.log(`[Storage] getQuestionsByExamType DEBUG:`, {
@@ -163,7 +172,7 @@ export class QuestionStorage {
       // Clear localStorage to force refresh from static data
       localStorage.removeItem(QUESTIONS_STORAGE_KEY);
       // Get fresh questions and validate them too
-      const freshQuestions = [...predefinedQuestions, ...dragDropQuestions];
+      const freshQuestions = [...predefinedQuestions, ...dragDropQuestions, ...dp700Questions];
       const validFreshQuestions = freshQuestions.filter(q => q && q.exam_type);
       this.saveQuestions(validFreshQuestions);
       return validFreshQuestions.filter(q => q && q.exam_type && q.exam_type === examType);
@@ -204,7 +213,7 @@ export class QuestionStorage {
     return filtered;
   }
 
-  static getQuestionsByExamTypeSync(examType: 'AZ-900' | 'AI-900'): Question[] {
+  static getQuestionsByExamTypeSync(examType: 'AZ-900' | 'AI-900' | 'DP-700'): Question[] {
     const questions = this.getQuestionsSync();
     
     // Validate questions and filter out any with undefined exam_type
@@ -214,7 +223,7 @@ export class QuestionStorage {
     if (invalidCount > 0) {
       console.warn(`[Storage] Sync: Found ${invalidCount} questions with undefined exam_type`);
       // Return fresh static data
-      const freshQuestions = [...predefinedQuestions, ...dragDropQuestions];
+      const freshQuestions = [...predefinedQuestions, ...dragDropQuestions, ...dp700Questions];
       return freshQuestions.filter(q => q && q.exam_type && q.exam_type === examType);
     }
     
@@ -236,54 +245,60 @@ export class QuestionStorage {
     return this.getQuestionsSync();
   }
 
-  static getAllQuestionsByExamTypeSync(examType: 'AZ-900' | 'AI-900'): Question[] {
+  static getAllQuestionsByExamTypeSync(examType: 'AZ-900' | 'AI-900' | 'DP-700'): Question[] {
     const allQuestions = this.getAllQuestionsSync();
     return allQuestions.filter(q => q.exam_type === examType);
   }
 
-  static getAllQuestionCounts(): { total: number; az900: number; ai900: number; dragDrop: { total: number; az900: number; ai900: number } } {
+  static getAllQuestionCounts(): { total: number; az900: number; ai900: number; dp700: number; dragDrop: { total: number; az900: number; ai900: number; dp700: number } } {
     const allQuestions = this.getQuestionsSync();
     const mcqQuestions = allQuestions.filter(q => q.type === 'mcq');
     const dragDropQuestionsFiltered = allQuestions.filter(q => q.type === 'drag-drop');
     
     const mcqAz900 = mcqQuestions.filter(q => q.exam_type === 'AZ-900').length;
     const mcqAi900 = mcqQuestions.filter(q => q.exam_type === 'AI-900').length;
+    const mcqDp700 = mcqQuestions.filter(q => q.exam_type === 'DP-700').length;
     
     const dragDropAz900 = dragDropQuestionsFiltered.filter(q => q.exam_type === 'AZ-900').length;
     const dragDropAi900 = dragDropQuestionsFiltered.filter(q => q.exam_type === 'AI-900').length;
+    const dragDropDp700 = dragDropQuestionsFiltered.filter(q => q.exam_type === 'DP-700').length;
     
     return {
       total: allQuestions.length,
       az900: mcqAz900 + dragDropAz900,
       ai900: mcqAi900 + dragDropAi900,
+      dp700: mcqDp700 + dragDropDp700,
       dragDrop: {
         total: dragDropQuestionsFiltered.length,
         az900: dragDropAz900,
-        ai900: dragDropAi900
+        ai900: dragDropAi900,
+        dp700: dragDropDp700
       }
     };
   }
 
-  static getQuestionCounts(): { total: number; az900: number; ai900: number } {
+  static getQuestionCounts(): { total: number; az900: number; ai900: number; dp700: number } {
     const questions = this.getQuestionsSync();
     const az900Count = questions.filter(q => q.exam_type === 'AZ-900').length;
     const ai900Count = questions.filter(q => q.exam_type === 'AI-900').length;
+    const dp700Count = questions.filter(q => q.exam_type === 'DP-700').length;
     
     return {
       total: questions.length,
       az900: az900Count,
-      ai900: ai900Count
+      ai900: ai900Count,
+      dp700: dp700Count
     };
   }
 
-  static async getRandomQuestions(examType: 'AZ-900' | 'AI-900', count: number): Promise<Question[]> {
+  static async getRandomQuestions(examType: 'AZ-900' | 'AI-900' | 'DP-700', count: number): Promise<Question[]> {
     const questions = await this.getQuestionsByExamType(examType);
     const shuffled = [...questions].sort(() => Math.random() - 0.5);
     return shuffled.slice(0, Math.min(count, shuffled.length));
   }
 
   // Get questions by difficulty level (Practice Mode)
-  static async getQuestionsByDifficulty(examType: 'AZ-900' | 'AI-900', difficulty: 'easy' | 'medium' | 'hard', count: number): Promise<Question[]> {
+  static async getQuestionsByDifficulty(examType: 'AZ-900' | 'AI-900' | 'DP-700', difficulty: 'easy' | 'medium' | 'hard', count: number): Promise<Question[]> {
     const allQuestions = await this.getQuestions();
     
     // Filter by exam type and difficulty
@@ -313,7 +328,7 @@ export class QuestionStorage {
   }
 
   // Get mixed difficulty questions (Examination Mode)
-  static async getRandomMixedQuestions(examType: 'AZ-900' | 'AI-900', count: number): Promise<Question[]> {
+  static async getRandomMixedQuestions(examType: 'AZ-900' | 'AI-900' | 'DP-700', count: number): Promise<Question[]> {
     const allQuestions = await this.getQuestions();
     
     // Filter by exam type only
@@ -343,7 +358,7 @@ export class QuestionStorage {
   }
 
   // Get random questions including drag-drop questions
-  static async getRandomAllQuestions(examType: 'AZ-900' | 'AI-900', count: number, includeDragDrop: boolean = true): Promise<Question[]> {
+  static async getRandomAllQuestions(examType: 'AZ-900' | 'AI-900' | 'DP-700', count: number, includeDragDrop: boolean = true): Promise<Question[]> {
     let allQuestions: Question[];
     
     console.log('[Storage] getRandomAllQuestions called with:', { examType, count, includeDragDrop });
@@ -398,7 +413,7 @@ export class QuestionStorage {
   static forceRefreshQuestions(): void {
     console.log('[Storage] Force refreshing questions from static data...');
     localStorage.removeItem(QUESTIONS_STORAGE_KEY);
-    const allQuestions = [...predefinedQuestions, ...dragDropQuestions];
+    const allQuestions = [...predefinedQuestions, ...dragDropQuestions, ...dp700Questions];
     this.saveQuestions(allQuestions);
     console.log(`[Storage] Refreshed with ${allQuestions.length} questions`);
   }

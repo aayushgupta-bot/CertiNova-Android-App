@@ -2,7 +2,7 @@ import React from 'react';
 import { useQuiz } from '../hooks/useQuiz';
 
 interface DebugInfoProps {
-  examType: 'AZ-900' | 'AI-900';
+  examType: 'AZ-900' | 'AI-900' | 'DP-700';
   questionCount: number;
 }
 

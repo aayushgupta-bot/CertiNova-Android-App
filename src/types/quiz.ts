@@ -1,21 +1,31 @@
 export interface Question {
   id: string;
   question: string;
-  type: 'mcq' | 'drag-drop' | 'matching' | 'true-false-table';
+  type: 'mcq' | 'drag-drop' | 'matching' | 'true-false-table' | 'dropdown-fill' | 'drag-drop-matching';
   options?: string[];
-  correct_answer: string | string[];
+  correct_answer: string | string[] | Record<string, string>;
   explanation?: string;
   category: string;
   difficulty: 'easy' | 'medium' | 'hard';
-  exam_type: 'AZ-900' | 'AI-900';
+  exam_type: 'AZ-900' | 'AI-900' | 'DP-700';
   created_at?: string;
+  // For dropdown-fill questions
+  blanks?: {
+    id: string;
+    options: string[];
+  }[];
+  // For drag-drop-matching questions
+  matchingPairs?: {
+    left: string[];
+    right: string[];
+  };
 }
 
 export type QuizMode = 'practice' | 'examination';
 
 export interface QuizConfig {
   mode: QuizMode;
-  examType: 'AZ-900' | 'AI-900';
+  examType: 'AZ-900' | 'AI-900' | 'DP-700';
   questionCount: number;
   difficulty?: 'easy' | 'medium' | 'hard'; // Only for practice mode
 }

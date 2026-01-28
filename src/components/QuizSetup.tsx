@@ -9,7 +9,7 @@ interface QuizSetupProps {
 
 export function QuizSetup({ onStartQuiz }: QuizSetupProps) {
   const [mode, setMode] = useState<'practice' | 'examination'>('practice'); // Default to practice mode
-  const [examType, setExamType] = useState<'AZ-900' | 'AI-900'>('AZ-900');
+  const [examType, setExamType] = useState<'AZ-900' | 'AI-900' | 'DP-700'>('AZ-900');
   const [questionCount, setQuestionCount] = useState(10);
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('easy');
   const [isLoading, setIsLoading] = useState(true);
@@ -157,7 +157,7 @@ export function QuizSetup({ onStartQuiz }: QuizSetupProps) {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 transition-colors duration-300">
                 Select Exam Type
               </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <button
                   onClick={() => setExamType('AZ-900')}
                   className={`p-3 sm:p-4 rounded-lg border-2 text-left transition-all duration-200 ${
@@ -182,6 +182,19 @@ export function QuizSetup({ onStartQuiz }: QuizSetupProps) {
                   <div className="font-semibold text-sm sm:text-base">AI-900</div>
                   <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                     AI Fundamentals
+                  </div>
+                </button>
+                <button
+                  onClick={() => setExamType('DP-700')}
+                  className={`p-3 sm:p-4 rounded-lg border-2 text-left transition-all duration-200 ${
+                    examType === 'DP-700'
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
+                      : 'border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 text-gray-800 dark:text-gray-200'
+                  }`}
+                >
+                  <div className="font-semibold text-sm sm:text-base">DP-700</div>
+                  <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                    Fabric Data Engineer
                   </div>
                 </button>
               </div>
