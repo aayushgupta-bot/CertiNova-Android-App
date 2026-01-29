@@ -429,6 +429,54 @@ export function useQuiz(config: QuizConfig) {
             result: tfResult 
           });
           return tfResult;
+        
+        case 'dropdown-fill':
+          // For dropdown-fill, compare the Record<string, string> objects
+          const dfCorrectAnswer = typeof question.correct_answer === 'string' 
+            ? JSON.parse(question.correct_answer) 
+            : question.correct_answer;
+          
+          if (typeof userAnswer !== 'object' || typeof dfCorrectAnswer !== 'object') {
+            logger.warn(`${logPrefix} Invalid answer format for dropdown-fill question ${question.id}`);
+            return false;
+          }
+          
+          const dfUserKeys = Object.keys(userAnswer).sort();
+          const dfCorrectKeys = Object.keys(dfCorrectAnswer).sort();
+          
+          const dfResult = dfUserKeys.length === dfCorrectKeys.length &&
+            dfUserKeys.every(key => userAnswer[key] === dfCorrectAnswer[key]);
+          
+          logger.log(`${logPrefix} Dropdown-fill ${question.id}:`, { 
+            userAnswer, 
+            correctAnswer: dfCorrectAnswer, 
+            result: dfResult 
+          });
+          return dfResult;
+        
+        case 'drag-drop-matching':
+          // For drag-drop-matching, compare the Record<string, string> objects
+          const ddmCorrectAnswer = typeof question.correct_answer === 'string' 
+            ? JSON.parse(question.correct_answer) 
+            : question.correct_answer;
+          
+          if (typeof userAnswer !== 'object' || typeof ddmCorrectAnswer !== 'object') {
+            logger.warn(`${logPrefix} Invalid answer format for drag-drop-matching question ${question.id}`);
+            return false;
+          }
+          
+          const ddmUserKeys = Object.keys(userAnswer).sort();
+          const ddmCorrectKeys = Object.keys(ddmCorrectAnswer).sort();
+          
+          const ddmResult = ddmUserKeys.length === ddmCorrectKeys.length &&
+            ddmUserKeys.every(key => userAnswer[key] === ddmCorrectAnswer[key]);
+          
+          logger.log(`${logPrefix} Drag-drop-matching ${question.id}:`, { 
+            userAnswer, 
+            correctAnswer: ddmCorrectAnswer, 
+            result: ddmResult 
+          });
+          return ddmResult;
           
         default:
           logger.warn(`${logPrefix} Unknown question type: ${question.type} for question ${question.id}`);

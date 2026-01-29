@@ -3,6 +3,8 @@ import { Question, QuizConfig } from '../types/quiz';
 import { MCQQuestion } from './questions/MCQQuestion';
 import { DragDropQuestion } from './questions/DragDropQuestion';
 import { TrueFalseTableQuestion } from './questions/TrueFalseTableQuestion';
+import { DropdownFillQuestion } from './questions/DropdownFillQuestion';
+import { DragDropMatchingQuestion } from './questions/DragDropMatchingQuestion';
 import { ChevronRight, Clock, Target, GraduationCap } from 'lucide-react';
 
 interface QuizInterfaceProps {
@@ -67,6 +69,22 @@ export function QuizInterface({
             onAnswer={onAnswer}
           />
         );
+      case 'dropdown-fill':
+        return (
+          <DropdownFillQuestion
+            question={question}
+            userAnswer={userAnswer}
+            onAnswer={onAnswer}
+          />
+        );
+      case 'drag-drop-matching':
+        return (
+          <DragDropMatchingQuestion
+            question={question}
+            userAnswer={userAnswer}
+            onAnswer={onAnswer}
+          />
+        );
       default:
         return <div>Unsupported question type</div>;
     }
@@ -86,6 +104,18 @@ export function QuizInterface({
         userAnswer.hasOwnProperty(index.toString()) && 
         typeof userAnswer[index.toString()] === 'boolean'
       );
+    }
+    if (question.type === 'dropdown-fill') {
+      // Check if all blanks have been filled
+      const blanks = question.blanks || [];
+      if (!userAnswer || typeof userAnswer !== 'object') return false;
+      return blanks.every(blank => userAnswer[blank.id] && userAnswer[blank.id] !== '');
+    }
+    if (question.type === 'drag-drop-matching') {
+      // Check if all left items have been matched
+      const leftItems = question.matchingPairs?.left || [];
+      if (!userAnswer || typeof userAnswer !== 'object') return false;
+      return leftItems.every(item => userAnswer[item] && userAnswer[item] !== '');
     }
     return false;
   };
