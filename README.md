@@ -1,31 +1,36 @@
 # 🚀 CertiNova  
-### Accelerating Your Microsoft Certification Journey  
+### Accelerating Your Microsoft Certification Journey
 
-CertiNova is an Android-based certification practice platform designed specifically for Microsoft exams like AI-900 and AZ-900.  
-The application provides mock tests, performance analytics, and progress tracking to help students prepare efficiently and confidently.
+CertiNova is an Android application designed to help students prepare for Microsoft certification exams such as **AI-900** and **AZ-900**.  
+It provides comprehensive mock tests, real-time performance analytics, topic-wise progress tracking, and exam simulation experience to boost preparation confidence.
 
 ---
 
 ## 📱 Project Overview
 
-CertiNova aims to bridge the gap between theoretical learning and real certification exam readiness by offering:
+CertiNova transforms Azure certification preparation into an interactive Android experience.  
+This app helps users practice mock tests, analyze their strengths and weaknesses, and track progress over time — all within a mobile interface.
+
+Features include:
 
 - Structured mock examinations  
 - Real-time scoring system  
-- Performance analytics dashboard  
-- Topic-wise progress tracking  
-- Exam simulation environment  
+- Detailed performance analytics  
+- Topic-wise accuracy breakdown  
+- Progress dashboard with trends and history  
 
-This project is developed as a semester mini project and demonstrates Android development, backend integration, and analytics implementation.
+This project is developed as a semester mini project to demonstrate Android development, backend integration, and data analytics implementation.
 
 ---
 
 ## 🎯 Supported Certifications
 
-- Microsoft Azure AI Fundamentals (AI-900)  
-- Microsoft Azure Fundamentals (AZ-900)  
+Currently supported exams:
 
-The architecture is scalable and can support additional Microsoft certifications in the future.
+- **Microsoft Azure AI Fundamentals (AI-900)**
+- **Microsoft Azure Fundamentals (AZ-900)**
+
+The architecture is scalable and can support more Microsoft certifications in future releases.
 
 ---
 
@@ -34,7 +39,7 @@ The architecture is scalable and can support additional Microsoft certifications
 - **Language:** Kotlin / Java  
 - **IDE:** Android Studio  
 - **Database:** Firebase / SQLite  
-- **Backend Services:** Firebase Authentication & Firestore (if used)  
+- **Backend Services:** Firebase Authentication & Firestore (optional)  
 - **UI Design:** Material Design Components  
 
 ---
@@ -46,17 +51,17 @@ The architecture is scalable and can support additional Microsoft certifications
 - User profile management  
 
 ### 🔹 Mock Test Engine
-- Timed examinations  
-- Multiple choice questions  
+- Timed exams  
+- Multiple-choice questions  
 - Instant result calculation  
 
 ### 🔹 Performance Analytics
 - Score history tracking  
-- Topic-wise accuracy analysis  
-- Strength & weakness identification  
+- Topic accuracy analysis  
+- Weakness & strength identification  
 
 ### 🔹 Progress Dashboard
-- Visual representation of improvement  
+- Visual improvement graphs  
 - Attempt history  
 - Performance trends  
 
@@ -65,7 +70,7 @@ The architecture is scalable and can support additional Microsoft certifications
 ## 🏗️ System Architecture
 
 ```
-User → Android Application → Database (Firebase/SQLite) → Analytics Engine → Dashboard
+User → Android App → Local Database / Firebase → Analytics Engine → Dashboard UI
 ```
 
 The application follows a modular structure:
@@ -73,16 +78,6 @@ The application follows a modular structure:
 - UI Layer  
 - Business Logic Layer  
 - Data Layer  
-
----
-
-## 📊 Future Enhancements
-
-- Leaderboard system  
-- AI-based performance prediction  
-- Personalized study recommendations  
-- Admin panel for question management  
-- Support for additional Microsoft certifications  
 
 ---
 
@@ -107,7 +102,7 @@ CertiNova/
 
 ## 📸 Screenshots
 
-(Add app screenshots here after development)
+(Add app screenshots under `screenshots/` after development)
 
 Example:
 
@@ -118,21 +113,31 @@ Example:
 
 ---
 
+## 📊 Future Enhancements
+
+- Leaderboard & community challenges  
+- AI-based performance predictions  
+- Personalized study recommendations  
+- Admin dashboard for question management  
+- Additional Microsoft certification support  
+
+---
+
 ## 🧠 Learning Outcomes
 
 - Android Application Development  
 - Firebase Integration  
 - Database Design  
 - Authentication Implementation  
-- UI/UX Design Principles  
+- UI/UX Design  
 - Data Analytics Implementation  
 
 ---
 
 ## 👨‍💻 Developed By
 
-**Aayush Gupta**  
-B.Tech – CS(AIML)  
+**Aayush Gupta, Anshuman Dubey, Samridhi Singh**  
+B.Tech – Computer Science (AIML)  
 Semester Mini Project  
 
 ---
